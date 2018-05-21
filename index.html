@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title></title>
+    <script src="js/mui.min.js"></script>
+    <link href="css/mui.min.css" rel="stylesheet"/>
+</head>
+
+<style>
+	#mCv{
+		background: #007AFF;
+	}
+	
+	img{
+		margin: 15px;
+	}
+	
+</style>
+<body>
+	<div>
+	<canvas id="mCv"/>
+	</div>
+	<div>
+	<img src="images/ic_clear.png" id="clear"/>
+	<img src="images/ic_eraser.png" id="btnEraser"/>
+	<img src="images/ic_pencil.png" id="btnPencil"/>
+	</div>
+	
+	<script type="text/javascript" charset="utf-8">
+      	
+      	function init(){
+
+      	var mCv= document.getElementById('mCv');
+      	var mCtxt= mCv.getContext('2d');
+      	
+      	mCv.width  = screen.width
+      	mCv.height = screen.height  -  screen.height/8
+      	
+      	
+      	mCtxt.fillStyle = "#000000"
+      	mCtxt.lineWidth = 3;
+      	
+      	var btnPencil= document.getElementById('btnPencil');
+      	var btnEraser= document.getElementById('btnEraser'); 
+      	var btnClear= document.getElementById('clear'); 
+      	
+      	
+      	var isEraser = false;
+      	
+      	btnPencil.onclick=function(){
+      		alert('开启画笔')
+      		isEraser = false
+      	}
+      	
+      	btnEraser.onclick=function(){
+      		alert('开启橡皮擦')
+      		isEraser = true
+      	}
+      	
+      	btnClear.onclick = function(){
+      		 var c=document.getElementById("mCv");  
+		    var cxt=c.getContext("2d");  
+		    cxt.clearRect(0,0,c.width,c.height);  
+      	}
+      	
+      	
+      	var startX = 0,startY = 0,endX = 0,endY = 0;
+      	var hastouch = "ontouchstart" in window?true:false//判断是否为移动设备 
+   		 tapstart = hastouch?"touchstart":"mousedown" 
+   		 tapmove = hastouch?"touchmove":"mousemove" 
+   		 tapend = hastouch?"touchend":"mouseup"
+      	
+      	 var isMouseDown  = false;
+      	 
+      	
+      	 mCv.addEventListener(tapstart,function(e){
+      	 	 e.preventDefault();
+      	 	 if(isEraser){
+      	 	 	mCtxt.strokeStyle = "#007AFF";
+      	 	 	mCtxt.lineWidth = 15;
+      	 	 }else{
+      	 	 	mCtxt.strokeStyle = "#000000";
+      	 	 	mCtxt.lineWidth = 3;
+      	 	 }
+      	 	 
+ 	      startX = hastouch?e.targetTouches[0].pageX:e.pageX;  
+   		  startY = hastouch?e.targetTouches[0].pageY:e.pageY;  
+      	 	    mCtxt.beginPath()
+      	 	    mCtxt.moveTo(startX,startY)
+      	 	    isMouseDown = true;
+      	 });
+      	 
+      	 mCv.addEventListener(tapmove,function(e){
+      	 	 e.preventDefault();
+      	 	 
+      	 	 if(isMouseDown){
+      	 	 	endX = hastouch?e.targetTouches[0].pageX:e.pageX;  
+       		   endY = hastouch?e.targetTouches[0].pageY:e.pageY;  	   
+      	 	   startX = endX;
+      	 	   startY  = endY;
+      	 	   mCtxt.lineTo(endX,endY)
+      	 	   mCtxt.stroke()
+      	 	 }
+      	
+      	 });
+      	 
+      	 mCv.addEventListener(tapend,function(e){
+      	 	 e.preventDefault();
+      	 	   mCtxt.closePath()
+      	 	   isMouseDown = false
+      	 });
+      	 
+      	 
+      	 
+     	}
+      	
+      	
+      	window.onload = init();
+    </script>
+</body>
+</html>
