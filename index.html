@@ -117,32 +117,21 @@
       	
       	 mCv.addEventListener(tapstart,function(e){
       	 	 e.preventDefault();
-      	 	 
-      	 	  
-      	 	 	
-	      	 	 if(isEraserMode){
-	      	 	 	mCtxt.strokeStyle = "#007AFF";
-	      	 	 	mCtxt.lineWidth = eraserWidth;
-	      	 	 }else{
-	      	 	 	mCtxt.strokeStyle = "#000000";
-	      	 	 	mCtxt.lineWidth = paintWidth;
-	      	 	 }
+	      	  if(isEraserMode){
+	      	 	 mCtxt.strokeStyle = "#007AFF";
+	      	 	 mCtxt.lineWidth = eraserWidth;
+	      	   }else{
+	      	     mCtxt.strokeStyle = "#000000";
+	      	 	 mCtxt.lineWidth = paintWidth;
+	      	   }
 	      	 	 
 	 	      startX = hastouch?e.targetTouches[0].pageX:e.pageX;  
 	   		  startY = hastouch?e.targetTouches[0].pageY:e.pageY;  
 	   		  
-	   		if(isAddTextMode){
-      	 	 
-	      	     if(startX >= currTextPos.left && startX<=currTextPos.right && startY >= currTextPos.top && startY <= currTextPos.bottom){
-				   isIn = true;
-				 }
-	      	     
-//	      	     alert("是否在点击区域:"+isIn+",正确位置("+currTextPos.left+","+currTextPos.top+","+currTextPos.right+","+currTextPos.bottom+")");
-      	 	 }else{ 
-	      	 	    mCtxt.beginPath()
-	      	 	    mCtxt.moveTo(startX,startY)
-      	 	 
-      	 	}
+	   		  mCtxt.beginPath()
+	      	  mCtxt.moveTo(startX,startY)
+	   		  
+	   		
       	 	 isMouseDown = true;
       	 });
       	 
@@ -155,15 +144,8 @@
 	      	 	   startX = endX;
 	      	 	   startY  = endY;
 		      	 	   
-		      	 if(isAddTextMode){
-	      	 	 	mCtxt.clearRect(currTextPos.left-1,currTextPos.top-1,currTextPos.right-currTextPos.left+2,currTextPos.bottom-currTextPos.top+2)
-		       		
-		       		mCtxt.fillText(mCurrText,endX,endY)
-		       		currTextPos = new TextPos(endX - 10,endY-35,endX+mCtxt.measureText(mCurrText).width+15,endY+50);
-	      	 	 }else{
-		      	 	   mCtxt.lineTo(endX,endY)
-		      	 	   mCtxt.stroke()
-		      	  }
+		      	   mCtxt.lineTo(endX,endY)
+		      	   mCtxt.stroke()   
 	      	}
       	
       	 });
