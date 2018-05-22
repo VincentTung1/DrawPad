@@ -10,59 +10,97 @@
 
 <style>
 	#mCv{
-		background: #007AFF;
+		background:#007AFF;
+		z-index: -1;
+		position: absolute;
+	}
+	
+	#mTempCv{
+		position: absolute;
+		z-index: 1;
+		visibility: hidden;
 	}
 	
 	img{
 		margin: 15px;
 	}
 	
+	#content{
+		position: relative;
+	}
+	
 </style>
 <body>
+	<div id="content">
 	<div>
 	<canvas id="mCv"/>
 	</div>
 	<div>
+	<canvas id="mTempCv"/>
+	</div>
+	</div>
+	<div style="position: fixed; bottom: 0;">
 	<img src="images/ic_clear.png" id="clear"/>
 	<img src="images/ic_eraser.png" id="btnEraser"/>
 	<img src="images/ic_pencil.png" id="btnPencil"/>
+	<img src="images/ic_text.png" id="btnText" />
 	</div>
 	
 	<script type="text/javascript" charset="utf-8">
-      	
+      
+      var paintWidth = 3;   //笔的宽度
+      var eraserWidth = 15;  //橡皮擦宽度
+      
+       var mCurrText = ""
+      
       	function init(){
 
       	var mCv= document.getElementById('mCv');
       	var mCtxt= mCv.getContext('2d');
       	
+        var mTempCv= document.getElementById('mTempCv');  //临时生成的画布
+        var mTempCtxt= mTempCv.getContext('2d');
+      	
       	mCv.width  = screen.width
       	mCv.height = screen.height  -  screen.height/8
       	
+      	mTempCv.width = mCv.width
+      	mTempCv.height = mCv.height
       	
       	mCtxt.fillStyle = "#000000"
-      	mCtxt.lineWidth = 3;
+      	mCtxt.lineWidth = paintWidth;
       	
       	var btnPencil= document.getElementById('btnPencil');
       	var btnEraser= document.getElementById('btnEraser'); 
       	var btnClear= document.getElementById('clear'); 
       	
       	
-      	var isEraser = false;
+      	
+      	var isEraserMode = false;   //是否处于橡皮擦模式
+      	
+      	var isAddTextMode = false;  //是否处于添加字体模式
       	
       	btnPencil.onclick=function(){
       		alert('开启画笔')
-      		isEraser = false
+      		isEraserMode = false
       	}
       	
       	btnEraser.onclick=function(){
       		alert('开启橡皮擦')
-      		isEraser = true
+      		isEraserMode = true
       	}
       	
       	btnClear.onclick = function(){
-      		 var c=document.getElementById("mCv");  
+      		var c=document.getElementById("mCv");  
 		    var cxt=c.getContext("2d");  
 		    cxt.clearRect(0,0,c.width,c.height);  
+      	}
+      	
+      	btnText.onclick = function(){
+      		var text = prompt('请输入文字:');
+      		
+		    drawText(text,true)
+		    isAddTextMode = true;
       	}
       	
       	
@@ -73,36 +111,60 @@
    		 tapend = hastouch?"touchend":"mouseup"
       	
       	 var isMouseDown  = false;
+      	 var isIn = false;   //是否处于文字框区域
       	 
+      	
       	
       	 mCv.addEventListener(tapstart,function(e){
       	 	 e.preventDefault();
-      	 	 if(isEraser){
-      	 	 	mCtxt.strokeStyle = "#007AFF";
-      	 	 	mCtxt.lineWidth = 15;
-      	 	 }else{
-      	 	 	mCtxt.strokeStyle = "#000000";
-      	 	 	mCtxt.lineWidth = 3;
-      	 	 }
       	 	 
- 	      startX = hastouch?e.targetTouches[0].pageX:e.pageX;  
-   		  startY = hastouch?e.targetTouches[0].pageY:e.pageY;  
-      	 	    mCtxt.beginPath()
-      	 	    mCtxt.moveTo(startX,startY)
-      	 	    isMouseDown = true;
+      	 	  
+      	 	 	
+	      	 	 if(isEraserMode){
+	      	 	 	mCtxt.strokeStyle = "#007AFF";
+	      	 	 	mCtxt.lineWidth = eraserWidth;
+	      	 	 }else{
+	      	 	 	mCtxt.strokeStyle = "#000000";
+	      	 	 	mCtxt.lineWidth = paintWidth;
+	      	 	 }
+	      	 	 
+	 	      startX = hastouch?e.targetTouches[0].pageX:e.pageX;  
+	   		  startY = hastouch?e.targetTouches[0].pageY:e.pageY;  
+	   		  
+	   		if(isAddTextMode){
+      	 	 
+	      	     if(startX >= currTextPos.left && startX<=currTextPos.right && startY >= currTextPos.top && startY <= currTextPos.bottom){
+				   isIn = true;
+				 }
+	      	     
+//	      	     alert("是否在点击区域:"+isIn+",正确位置("+currTextPos.left+","+currTextPos.top+","+currTextPos.right+","+currTextPos.bottom+")");
+      	 	 }else{ 
+	      	 	    mCtxt.beginPath()
+	      	 	    mCtxt.moveTo(startX,startY)
+      	 	 
+      	 	}
+      	 	 isMouseDown = true;
       	 });
       	 
       	 mCv.addEventListener(tapmove,function(e){
       	 	 e.preventDefault();
       	 	 
       	 	 if(isMouseDown){
-      	 	 	endX = hastouch?e.targetTouches[0].pageX:e.pageX;  
-       		   endY = hastouch?e.targetTouches[0].pageY:e.pageY;  	   
-      	 	   startX = endX;
-      	 	   startY  = endY;
-      	 	   mCtxt.lineTo(endX,endY)
-      	 	   mCtxt.stroke()
-      	 	 }
+	      	 	   endX = hastouch?e.targetTouches[0].pageX:e.pageX;  
+	       		   endY = hastouch?e.targetTouches[0].pageY:e.pageY;  	   
+	      	 	   startX = endX;
+	      	 	   startY  = endY;
+		      	 	   
+		      	 if(isAddTextMode){
+	      	 	 	mCtxt.clearRect(currTextPos.left-1,currTextPos.top-1,currTextPos.right-currTextPos.left+2,currTextPos.bottom-currTextPos.top+2)
+		       		
+		       		mCtxt.fillText(mCurrText,endX,endY)
+		       		currTextPos = new TextPos(endX - 10,endY-35,endX+mCtxt.measureText(mCurrText).width+15,endY+50);
+	      	 	 }else{
+		      	 	   mCtxt.lineTo(endX,endY)
+		      	 	   mCtxt.stroke()
+		      	  }
+	      	}
       	
       	 });
       	 
@@ -110,14 +172,100 @@
       	 	 e.preventDefault();
       	 	   mCtxt.closePath()
       	 	   isMouseDown = false
+      	 	   isAddTextMode =false
       	 });
       	 
       	 
       	 
+      	 
+      	 /******************临时画布触摸事件************************/
+      	  mTempCv.addEventListener(tapstart,function(e){
+      	 	 e.preventDefault();
+	      	 	 
+	 	      startX = hastouch?e.targetTouches[0].pageX:e.pageX;  
+	   		  startY = hastouch?e.targetTouches[0].pageY:e.pageY;  
+	   		  
+	   		if(isAddTextMode){
+      	 	 
+	      	     if(startX >= currTextPos.left && startX<=currTextPos.right && startY >= currTextPos.top && startY <= currTextPos.bottom){
+				   isIn = true;
+				    isMouseDown = true;
+				 }
+	      	     
+//	      	     alert("是否在点击区域:"+isIn+",正确位置("+currTextPos.left+","+currTextPos.top+","+currTextPos.right+","+currTextPos.bottom+")");
+      	 	 }
+	   		
+      	 	
+      	 });
+      	 
+      	 mTempCv.addEventListener(tapmove,function(e){
+      	 	 e.preventDefault();
+      	 	 
+      	 	 if(isMouseDown && isIn){
+	      	 	   endX = hastouch?e.targetTouches[0].pageX:e.pageX;  
+	       		   endY = hastouch?e.targetTouches[0].pageY:e.pageY;  	   
+	      	 	   startX = endX;
+	      	 	   startY  = endY;
+		      	 	   
+		      	mTempCtxt.clearRect(currTextPos.left-1,currTextPos.top-1,currTextPos.right-currTextPos.left+2,currTextPos.bottom-currTextPos.top+2)
+		     
+		      	mTempCtxt.fillText(mCurrText,endX,endY)
+		        currTextPos = new TextPos(endX - 10,endY-35,endX+mTempCtxt.measureText(mCurrText).width+15,endY+50);
+	      	}
+      	
+      	 });
+      	 
+      	 mTempCv.addEventListener(tapend,function(e){
+      	 	 e.preventDefault();
+      	 	   
+      	 	   isAddTextMode =false
+      	 	   isMouseDown = false
+      	 	   if (!isMouseDown) {    //合并图层到主图层
+      	 	   	 if (!isIn) {
+	      	 	   mTempCtxt.clearRect(currTextPos.left-1,currTextPos.top-1,currTextPos.right-currTextPos.left+2,currTextPos.bottom-currTextPos.top+2)
+			       mTempCtxt.fillText(mCurrText,screen.width/2,(screen.height/2))
+      	 	   	 }
+      	 	   	
+      	 	   	 mCtxt.drawImage(mTempCv,0,0);
+      	 	   	 mTempCtxt.clearRect(0,0,mTempCv.width,mTempCv.height);
+      	 	   	 mTempCv.style.visibility = "hidden";
+      	 	     
+      	 	   }
+      	 	   
+      	 	   isIn = false
+      	 });
      	}
       	
       	
       	window.onload = init();
+      	
+      	
+      	/**
+      	 *  绘制临时文字
+      	 * @param {Object} text
+      	 */
+      	function drawText(text,isNeedRect){
+      		var mTempCv = document.getElementById('mTempCv');
+      		mTempCv.style.visibility = "visible";
+		    var cxt=mTempCv.getContext("2d");  
+		    cxt.font="30px Verdana";
+		    cxt.fillText(text,screen.width/2,(screen.height/2))
+		    if(isNeedRect){
+		    	cxt.lineWidth = 1
+		    cxt.strokeRect((screen.width/2)-10,screen.height/2-35,cxt.measureText(text).width+15,50);
+		    currTextPos = new TextPos((screen.width/2)-10,screen.height/2-35,(screen.width/2)-10+cxt.measureText(text).width+15,screen.height/2-35+50);
+		    cxt.lineWidth = paintWidth
+		    mCurrText = text;
+		    }
+      	}
+      	
+      	
+      	function TextPos(left,top,right,bottom){
+      		this.left = left
+      		this.top = top
+      		this.right = right
+      		this.bottom = bottom
+      	}
     </script>
 </body>
 </html>
