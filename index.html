@@ -98,7 +98,7 @@
       	
       	btnText.onclick = function(){
       		var text = prompt('请输入文字:');
-      		
+      		if(text == null) return;
 		    drawText(text,true)
 		    isAddTextMode = true;
       	}
